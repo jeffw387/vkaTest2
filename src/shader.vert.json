@@ -1,0 +1,32 @@
+{
+  "$schema": "http://jw387.com/schemas/vertex-shader.schema.json",
+  "inputs": [
+    {
+      "binding": 0,
+      "location": 0,
+      "glsl_type": {
+        "type": "vec2"
+      },
+      "input_name": "inPos",
+      "offset": 0
+    },
+    {
+      "binding": 1,
+      "location": 1,
+      "glsl_type": {
+        "type": "vec4"
+      },
+      "input_name": "inColor",
+      "offset": 0
+    }
+  ],
+  "outputs": [
+    {
+      "glsl_type": {
+        "type": "vec4"
+      },
+      "output_name": "outColor",
+      "location": 0
+    }
+  ]
+}
