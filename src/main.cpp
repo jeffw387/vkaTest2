@@ -37,6 +37,7 @@ int main() {
   auto queueFamily = vka::queue_family_builder{}
                        .graphics_support()
                        .present_support(*surfacePtr)
+                       .queue(1.f)
                        .build(physicalDevice)
                        .map_error([](auto error) {
                          multi_logger::get()->critical(
