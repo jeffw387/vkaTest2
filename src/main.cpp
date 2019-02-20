@@ -67,6 +67,9 @@ int main() {
         exit(error);
       })
       .value();
-  
+  auto vertexShaderPtr =
+    vka::make_shader<jshd::vertex_shader_data>(*devicePtr, "shader.vert");
+  auto fragmentShaderPtr =
+    vka::make_shader<jshd::fragment_shader_data>(*devicePtr, "shader.frag");
   return 0;
 }
