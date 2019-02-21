@@ -117,5 +117,7 @@ int main() {
         exit(error);
       })
       .value();
+  auto pipelineLayoutPtr = vka::make_pipeline_layout(
+    *devicePtr, vertexShaderData, fragmentShaderData, {});
   return 0;
 }
