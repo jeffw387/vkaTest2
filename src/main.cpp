@@ -119,5 +119,26 @@ int main() {
       .value();
   auto pipelineLayoutPtr = vka::make_pipeline_layout(
     *devicePtr, vertexShaderData, fragmentShaderData, {});
+  auto renderPassPtr =
+    vka::render_pass_builder{}
+      .add_attachment(
+        vka::attachment_builder{}
+          .initial_layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+          .final_layout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+          .format(swapFormat)
+          .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
+          .storeOp(VK_ATTACHMENT_STORE_OP_STORE)
+          .samples(VK_SAMPLE_COUNT_1_BIT)
+          .build())
+      .add_subpass(
+        vka::subpass_builder{}
+          .color_attachment(0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+          .build())
+      .build(*devicePtr)
+      .map_error([](auto error) {
+        multi_logger::get()->critical("Error creating render pass!");
+        exit(error);
+      })
+      .value();
   return 0;
 }
