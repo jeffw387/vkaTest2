@@ -98,5 +98,24 @@ int main() {
       exit(1);
       })
       .value();
+  auto cmdPoolPtr =
+    vka::command_pool_builder{}
+      .queue_family_index(queueFamily.familyIndex)
+      .build(*devicePtr)
+      .map_error([](auto error) {
+        multi_logger::get()->critical("Unable to create command pool!");
+        exit(error);
+      })
+      .value();
+  auto cmdPtr =
+    vka::command_buffer_allocator{}
+      .set_command_pool(cmdPoolPtr.get())
+      .level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
+      .allocate(*devicePtr)
+      .map_error([](auto error) {
+        multi_logger::get()->critical("Unable to allocate command buffer!");
+        exit(error);
+      })
+      .value();
   return 0;
 }
