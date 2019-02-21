@@ -23,10 +23,12 @@ int main() {
         exit(1);
       })
       .value();
+  constexpr auto surfaceWidth = 900;
+  constexpr auto surfaceHeight = 900;
   auto surfacePtr =
     vka::surface_builder{}
-      .width(900)
-      .height(900)
+      .width(surfaceWidth)
+      .height(surfaceHeight)
       .title("vkaTest2")
       .build(*instancePtr)
       .map_error([](auto error) {
@@ -55,12 +57,14 @@ int main() {
         exit(error);
       })
       .value();
+  constexpr auto swapFormat = VK_FORMAT_B8G8R8A8_UNORM;
+  constexpr auto swapColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
   auto swapchainPtr =
     vka::swapchain_builder{}
       .queue_family_index(queueFamily.familyIndex)
       .present_mode(VK_PRESENT_MODE_FIFO_KHR)
-      .image_format(VK_FORMAT_B8G8R8A8_UNORM)
-      .image_color_space(VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+      .image_format(swapFormat)
+      .image_color_space(swapColorSpace)
       .image_count(3)
       .build(physicalDevice, *surfacePtr, *devicePtr)
       .map_error([](auto error) {
