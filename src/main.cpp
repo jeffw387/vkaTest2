@@ -81,17 +81,22 @@ int main() {
         exit(error);
       })
       .value();
-  auto vertexShaderPtr =
+
+  auto vertexShaderData =
     vka::make_shader<jshd::vertex_shader_data>(*devicePtr, "shader.vert")
     .map_error([](auto error) {
-      multi_logger::get()->critical("Unable to create shader module shader.vert!");
+        multi_logger::get()->critical(
+          "Unable to create shader module shader.vert!");
       exit(1);
-    }).value();
-  auto fragmentShaderPtr =
+      })
+      .value();
+  auto fragmentShaderData =
     vka::make_shader<jshd::fragment_shader_data>(*devicePtr, "shader.frag")
     .map_error([](auto error) {
-      multi_logger::get()->critical("Unable to create shader module shader.frag!");
+        multi_logger::get()->critical(
+          "Unable to create shader module shader.frag!");
       exit(1);
-    }).value();
+      })
+      .value();
   return 0;
 }
