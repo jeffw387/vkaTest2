@@ -140,5 +140,40 @@ int main() {
         exit(error);
       })
       .value();
+  auto blendState = vka::make_blend_state(
+    {vka::make_blend_attachment(vka::no_blend_attachment{})});
+  auto depthStencilState = vka::make_depth_stencil_state(false, false);
+  auto dynamicState = vka::make_dynamic_state();
+  auto inputAssemblyState =
+    vka::make_input_assembly(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+  VkViewport viewport{};
+  viewport.width = static_cast<float>(surfaceWidth);
+  viewport.height = static_cast<float>(surfaceHeight);
+  viewport.minDepth = 0.f;
+  viewport.maxDepth = 1.f;
+
+  VkRect2D scissor{};
+  scissor.extent.width = static_cast<uint32_t>(surfaceWidth);
+  scissor.extent.height = static_cast<uint32_t>(surfaceHeight);
+  auto viewportState = vka::make_viewport_state({viewport}, {scissor});
+  auto rasterizationState = vka::make_rasterization_state();
+  auto vertexStageState = vka::make_shader_stage(vertexShaderData, "main", {});
+  auto fragmentStageState =
+    vka::make_shader_stage(fragmentShaderData, "main", {});
+  auto vertexState = vka::make_vertex_state(vertexShaderData.shaderData);
+  auto pipelinePtr = vka::make_pipeline(
+    *devicePtr,
+    *renderPassPtr,
+    0,
+    VK_NULL_HANDLE,
+    blendState,
+    depthStencilState,
+    dynamicState,
+    inputAssemblyState,
+    viewportState,
+    rasterizationState,
+    vertexStageState,
+    fragmentStageState,
+    vertexState);
   return 0;
 }
