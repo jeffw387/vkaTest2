@@ -436,6 +436,22 @@ int main() {
     if (glfw::poll_os(*surfacePtr)) {
       break;
     }
+    uint32_t imageIndex{};
+    auto acquireResult = vkAcquireNextImageKHR(
+      *devicePtr,
+      *swapchainPtr,
+      ~uint64_t{},
+      {},
+      *acquireFencePtr,
+      &imageIndex);
+    if (acquireResult < 0) {
+      multi_logger::get()->critical(
+        "Error {} while acquiring swap image!",
+        acquireResult);
+      exit(acquireResult);
+    } else if (acquireResult != VK_SUCCESS) {
+      continue;
+    }
   }
   vkDeviceWaitIdle(*devicePtr);
   return 0;
