@@ -393,5 +393,43 @@ int main() {
     vkCmdEndRenderPass(*cmdPtr);
     vkEndCommandBuffer(*cmdPtr);
   }
+
+  // Fence used when acquiring a swap image
+  auto acquireFencePtr =
+    vka::fence_builder{}
+      .build(*devicePtr)
+      .map_error(
+        err::crit{"Unable to create image acquire fence!"})
+      .value();
+
+  // semaphores signaled when the render command buffer
+  // finishes execution
+  std::array<std::unique_ptr<vka::semaphore>, 3>
+    drawCmdDonePtrs;
+  std::for_each(
+    std::begin(drawCmdDonePtrs),
+    std::end(drawCmdDonePtrs),
+    [&devicePtr](auto& drawCmdDone) {
+      drawCmdDone =
+        vka::semaphore_builder{}
+          .build(*devicePtr)
+          .map_error(err::crit{"Unable to create (render "
+                               "complete) semaphore!"})
+          .value();
+    });
+
+  std::array<std::unique_ptr<vka::fence>, 3> cmdFencePtrs;
+  std::for_each(
+    std::begin(cmdFencePtrs),
+    std::end(cmdFencePtrs),
+    [&devicePtr](auto& cmdFencePtr) {
+      cmdFencePtr =
+        vka::fence_builder{}
+          .signaled()
+          .build(*devicePtr)
+          .map_error(err::crit{
+            "Unable to create (render cmd) fence!"})
+          .value();
+    });
   return 0;
 }
