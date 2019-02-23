@@ -431,5 +431,9 @@ int main() {
             "Unable to create (render cmd) fence!"})
           .value();
     });
+
+  while (true) {
+  }
+  vkDeviceWaitIdle(*devicePtr);
   return 0;
 }
