@@ -195,5 +195,14 @@ int main() {
     vertexState,
     vertexStageState,
     fragmentStageState);
+  auto allocator =
+    vka::allocator_builder{}
+      .physical_device(physicalDevice)
+      .device(*devicePtr)
+      .preferred_block_size(1 << 5)
+      .build()
+      .map_error(
+        err::crit{"Unable to create vulkan allocator!"})
+      .value();
   return 0;
 }
