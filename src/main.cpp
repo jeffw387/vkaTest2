@@ -114,14 +114,20 @@ int main() {
       .map_error(
         err::crit{"Unable to create command pool!"})
       .value();
-  auto cmdPtr =
-    vka::command_buffer_allocator{}
+  std::array<std::unique_ptr<vka::command_buffer>, 3>
+    cmdPtrs;
+  std::for_each(
+    std::begin(cmdPtrs),
+    std::end(cmdPtrs),
+    [&devicePtr, &cmdPoolPtr](auto& cmdPtr) {
+      cmdPtr = vka::command_buffer_allocator{}
       .set_command_pool(cmdPoolPtr.get())
       .level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
       .allocate(*devicePtr)
                  .map_error(err::crit{
                    "Unable to allocate command buffer!"})
       .value();
+    });
   auto pipelineLayoutPtr = vka::make_pipeline_layout(
     *devicePtr, vertexShaderData, fragmentShaderData, {});
   auto renderPassPtr =
