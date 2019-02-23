@@ -286,5 +286,48 @@ int main() {
     vkWaitForFences(*devicePtr, 1, &flushFence, true, ~uint64_t{});
   }
 
+  vkGetSwapchainImagesKHR(
+    *devicePtr, *swapchainPtr, &swapImageCount, nullptr);
+  std::vector<VkImage> swapImages;
+  swapImages.resize(swapImageCount);
+  vkGetSwapchainImagesKHR(
+    *devicePtr,
+    *swapchainPtr,
+    &swapImageCount,
+    swapImages.data());
+  std::vector<std::unique_ptr<vka::image_view>> swapViews;
+  swapViews.reserve(vka::size32(swapImages));
+  std::vector<std::unique_ptr<vka::framebuffer>>
+    framebuffers;
+  framebuffers.reserve(vka::size32(swapViews));
+  std::for_each(
+    std::begin(swapImages),
+    std::end(swapImages),
+    [&](auto swapImage) {
+      auto swapViewPtr =
+        vka::image_view_builder{}
+          .image_source(swapImage)
+          .image_type(VK_IMAGE_TYPE_2D)
+          .image_format(swapFormat)
+          .image_aspect(VK_IMAGE_ASPECT_COLOR_BIT)
+          .array_layers(1)
+          .build(*devicePtr)
+          .map_error(err::crit{
+            "Unable to create image view for swap "
+            "image!"})
+          .value();
+      auto framebuffer =
+        vka::framebuffer_builder{}
+          .render_pass(*renderPassPtr)
+          .attachments({*swapViewPtr})
+          .dimensions(surfaceWidth, surfaceHeight)
+          .build(*devicePtr)
+          .map_error(
+            err::crit{"Unable to create framebuffer!"})
+          .value();
+      swapViews.push_back(std::move(swapViewPtr));
+      framebuffers.push_back(std::move(framebuffer));
+    });
+
   return 0;
 }
