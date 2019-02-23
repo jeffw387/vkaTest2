@@ -183,6 +183,7 @@ int main() {
     *devicePtr,
     *renderPassPtr,
     0,
+    *pipelineLayoutPtr,
     VK_NULL_HANDLE,
     blendState,
     depthStencilState,
@@ -190,8 +191,9 @@ int main() {
     inputAssemblyState,
     viewportState,
     rasterizationState,
+    multisampleState,
+    vertexState,
     vertexStageState,
-    fragmentStageState,
-    vertexState);
+    fragmentStageState);
   return 0;
 }
