@@ -49,36 +49,36 @@ int main() {
   constexpr auto surfaceWidth = 900;
   constexpr auto surfaceHeight = 900;
   auto surfacePtr = vka::surface_builder{}
-      .width(surfaceWidth)
-      .height(surfaceHeight)
-      .title("vkaTest2")
-      .build(*instancePtr)
+                      .width(surfaceWidth)
+                      .height(surfaceHeight)
+                      .title("vkaTest2")
+                      .build(*instancePtr)
                       .map_error(err::crit{
                         "Unable to create vulkan surface!"})
-      .value();
+                      .value();
   auto queueFamily =
     vka::queue_family_builder{}
-                       .graphics_support()
-                       .present_support(*surfacePtr)
-                       .queue(1.f)
-                       .build(physicalDevice)
+      .graphics_support()
+      .present_support(*surfacePtr)
+      .queue(1.f)
+      .build(physicalDevice)
       .map_error(err::crit{
         "Unable to find a suitable queue family!"})
-                       .value();
+      .value();
   auto devicePtr = vka::device_builder{}
-      .extension(vka::swapchain_extension)
-      .physical_device(physicalDevice)
-      .add_queue_family(queueFamily)
-      .build(*instancePtr)
+                     .extension(vka::swapchain_extension)
+                     .physical_device(physicalDevice)
+                     .add_queue_family(queueFamily)
+                     .build(*instancePtr)
                      .map_error(err::crit{
                        "Failed to create vulkan device!"})
-      .value();
+                     .value();
   auto queue = vka::queue_builder{}
-      .queue_info(queueFamily, 0)
-      .build(*devicePtr)
+                 .queue_info(queueFamily, 0)
+                 .build(*devicePtr)
                  .map_error(err::crit{
                    "Unable to retrieve device queue!"})
-      .value();
+                 .value();
   constexpr auto swapFormat = VK_FORMAT_B8G8R8A8_UNORM;
   constexpr auto swapColorSpace =
     VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
@@ -121,12 +121,12 @@ int main() {
     std::end(cmdPtrs),
     [&devicePtr, &cmdPoolPtr](auto& cmdPtr) {
       cmdPtr = vka::command_buffer_allocator{}
-      .set_command_pool(cmdPoolPtr.get())
-      .level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
-      .allocate(*devicePtr)
+                 .set_command_pool(cmdPoolPtr.get())
+                 .level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
+                 .allocate(*devicePtr)
                  .map_error(err::crit{
                    "Unable to allocate command buffer!"})
-      .value();
+                 .value();
     });
   auto pipelineLayoutPtr = vka::make_pipeline_layout(
     *devicePtr, vertexShaderData, fragmentShaderData, {});
