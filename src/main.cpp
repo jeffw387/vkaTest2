@@ -225,5 +225,26 @@ int main() {
       .value();
   std::memcpy(
     posBufferPtr, positions.data(), sizeof(positions));
+
+  std::array<glm::vec4, 3> colors = {
+    glm::vec4{1.f, 0.f, 0.f, 1.f},
+    glm::vec4{0.f, 1.f, 0.f, 1.f},
+    glm::vec4{0.f, 0.f, 1.f, 1.f}};
+  auto colorBuffer =
+    vka::buffer_builder{}
+      .cpu_to_gpu()
+      .vertex_buffer()
+      .queue_family_index(queueFamily.familyIndex)
+      .size(sizeof(colors))
+      .build(*allocator)
+      .map_error(
+        err::crit{"Unable to create vertex color buffer!"})
+      .value();
+  auto colorBufferPtr =
+    colorBuffer->map()
+      .map_error(
+        err::crit{"Unable to map vertex color buffer!"})
+      .value();
+  std::memcpy(colorBufferPtr, colors.data(), sizeof(colors));
   return 0;
 }
