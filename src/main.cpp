@@ -433,6 +433,9 @@ int main() {
     });
 
   while (true) {
+    if (glfw::poll_os(*surfacePtr)) {
+      break;
+    }
   }
   vkDeviceWaitIdle(*devicePtr);
   return 0;
