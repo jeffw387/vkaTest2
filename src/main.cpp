@@ -1,6 +1,12 @@
+#include <fmt/format.h>
+#include <algorithm>
+#include <array>
+#include <cstring>
 #include <memory>
 #include "logger.hpp"
+#include "memory_allocator.hpp"
 #include "platform_glfw.hpp"
+#include "sync_helper.hpp"
 #include "vka.hpp"
 
 using namespace platform;
