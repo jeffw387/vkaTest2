@@ -204,5 +204,26 @@ int main() {
       .map_error(
         err::crit{"Unable to create vulkan allocator!"})
       .value();
+  std::array<glm::vec2, 3> positions = {
+    glm::vec2{0.f, -0.5f},
+    glm::vec2{-0.5, 0.5f},
+    glm::vec2{0.5f, 0.5f}};
+  auto posBuffer =
+    vka::buffer_builder{}
+      .cpu_to_gpu()
+      .vertex_buffer()
+      .queue_family_index(queueFamily.familyIndex)
+      .size(sizeof(positions))
+      .build(*allocator)
+      .map_error(err::crit{
+        "Unable to create vertex position buffer!"})
+      .value();
+  auto posBufferPtr =
+    posBuffer->map()
+      .map_error(
+        err::crit{"Unable to map vertex position buffer!"})
+      .value();
+  std::memcpy(
+    posBufferPtr, positions.data(), sizeof(positions));
   return 0;
 }
