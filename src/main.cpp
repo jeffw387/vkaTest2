@@ -80,14 +80,16 @@ int main() {
                    "Unable to retrieve device queue!"})
       .value();
   constexpr auto swapFormat = VK_FORMAT_B8G8R8A8_UNORM;
-  constexpr auto swapColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+  constexpr auto swapColorSpace =
+    VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+  uint32_t swapImageCount{3};
   auto swapchainPtr =
     vka::swapchain_builder{}
       .queue_family_index(queueFamily.familyIndex)
       .present_mode(VK_PRESENT_MODE_FIFO_KHR)
       .image_format(swapFormat)
       .image_color_space(swapColorSpace)
-      .image_count(3)
+      .image_count(swapImageCount)
       .build(physicalDevice, *surfacePtr, *devicePtr)
       .map_error(
         err::crit{"Failed to create vulkan swapchain!"})
