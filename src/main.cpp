@@ -33,64 +33,51 @@ struct crit {
 int main() {
   auto instancePtr =
     vka::instance_builder{}
-      .add_extensions(glfw::get_required_instance_extensions())
+      .add_extensions(
+        glfw::get_required_instance_extensions())
       .add_layer(vka::standard_validation)
       .build()
-      .map_error([](auto error) {
-        multi_logger::get()->critical("Cannot create vulkan instance!");
-        exit(error);
-      })
+      .map_error(
+        err::crit{"Cannot create vulkan instance!"})
       .value();
   auto physicalDevice =
     vka::physical_device_selector{}
       .select(*instancePtr)
-      .map_error([](auto error) {
-        multi_logger::get()->critical("Can't find a suitable vulkan device!");
-        exit(1);
-      })
+      .map_error(
+        err::crit{"Can't find a suitable vulkan device!"})
       .value();
   constexpr auto surfaceWidth = 900;
   constexpr auto surfaceHeight = 900;
-  auto surfacePtr =
-    vka::surface_builder{}
+  auto surfacePtr = vka::surface_builder{}
       .width(surfaceWidth)
       .height(surfaceHeight)
       .title("vkaTest2")
       .build(*instancePtr)
-      .map_error([](auto error) {
-        multi_logger::get()->critical("Unable to create vulkan surface!");
-        exit(1);
-      })
+                      .map_error(err::crit{
+                        "Unable to create vulkan surface!"})
       .value();
-  auto queueFamily = vka::queue_family_builder{}
+  auto queueFamily =
+    vka::queue_family_builder{}
                        .graphics_support()
                        .present_support(*surfacePtr)
                        .queue(1.f)
                        .build(physicalDevice)
-                       .map_error([](auto error) {
-                         multi_logger::get()->critical(
-                           "Unable to find a suitable queue family!");
-                       })
+      .map_error(err::crit{
+        "Unable to find a suitable queue family!"})
                        .value();
-  auto devicePtr =
-    vka::device_builder{}
+  auto devicePtr = vka::device_builder{}
       .extension(vka::swapchain_extension)
       .physical_device(physicalDevice)
       .add_queue_family(queueFamily)
       .build(*instancePtr)
-      .map_error([](auto error) {
-        multi_logger::get()->critical("Failed to create vulkan device!");
-        exit(error);
-      })
+                     .map_error(err::crit{
+                       "Failed to create vulkan device!"})
       .value();
-  auto queue =
-    vka::queue_builder{}
+  auto queue = vka::queue_builder{}
       .queue_info(queueFamily, 0)
       .build(*devicePtr)
-      .map_error([](auto error) {
-        multi_logger::get()->critical("Unable to retrieve device queue!");
-        exit(1);
-      })
+                 .map_error(err::crit{
+                   "Unable to retrieve device queue!"})
       .value();
   constexpr auto swapFormat = VK_FORMAT_B8G8R8A8_UNORM;
   constexpr auto swapColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
@@ -102,46 +89,36 @@ int main() {
       .image_color_space(swapColorSpace)
       .image_count(3)
       .build(physicalDevice, *surfacePtr, *devicePtr)
-      .map_error([](auto error) {
-        multi_logger::get()->critical("Failed to create vulkan swapchain!");
-        exit(error);
-      })
+      .map_error(
+        err::crit{"Failed to create vulkan swapchain!"})
       .value();
 
   auto vertexShaderData =
-    vka::make_shader<jshd::vertex_shader_data>(*devicePtr, "shader.vert")
-      .map_error([](auto error) {
-        multi_logger::get()->critical(
-          "Unable to create shader module shader.vert!");
-        exit(1);
-      })
+    vka::make_shader<jshd::vertex_shader_data>(
+      *devicePtr, "shader.vert")
+      .map_error(err::crit{
+        "Unable to create shader module shader.vert!"})
       .value();
   auto fragmentShaderData =
-    vka::make_shader<jshd::fragment_shader_data>(*devicePtr, "shader.frag")
-      .map_error([](auto error) {
-        multi_logger::get()->critical(
-          "Unable to create shader module shader.frag!");
-        exit(1);
-      })
+    vka::make_shader<jshd::fragment_shader_data>(
+      *devicePtr, "shader.frag")
+      .map_error(err::crit{
+        "Unable to create shader module shader.frag!"})
       .value();
   auto cmdPoolPtr =
     vka::command_pool_builder{}
       .queue_family_index(queueFamily.familyIndex)
       .build(*devicePtr)
-      .map_error([](auto error) {
-        multi_logger::get()->critical("Unable to create command pool!");
-        exit(error);
-      })
+      .map_error(
+        err::crit{"Unable to create command pool!"})
       .value();
   auto cmdPtr =
     vka::command_buffer_allocator{}
       .set_command_pool(cmdPoolPtr.get())
       .level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
       .allocate(*devicePtr)
-      .map_error([](auto error) {
-        multi_logger::get()->critical("Unable to allocate command buffer!");
-        exit(error);
-      })
+                 .map_error(err::crit{
+                   "Unable to allocate command buffer!"})
       .value();
   auto pipelineLayoutPtr = vka::make_pipeline_layout(
     *devicePtr, vertexShaderData, fragmentShaderData, {});
@@ -161,10 +138,7 @@ int main() {
           .color_attachment(0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
           .build())
       .build(*devicePtr)
-      .map_error([](auto error) {
-        multi_logger::get()->critical("Error creating render pass!");
-        exit(error);
-      })
+      .map_error(err::crit{"Error creating render pass!"})
       .value();
   auto blendState = vka::make_blend_state(
     {vka::make_blend_attachment(vka::no_blend_attachment{})});
