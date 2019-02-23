@@ -246,5 +246,45 @@ int main() {
         err::crit{"Unable to map vertex color buffer!"})
       .value();
   std::memcpy(colorBufferPtr, colors.data(), sizeof(colors));
+
+  vmaFlushAllocation(*allocator, *posBuffer, 0, VK_WHOLE_SIZE);
+  vmaFlushAllocation(*allocator, *colorBuffer, 0, VK_WHOLE_SIZE);
+
+  auto flushCmdPtr = vka::command_buffer_allocator{}
+    .set_command_pool(cmdPoolPtr.get())
+    .allocate(*devicePtr)
+    .map_error(err::crit{"Unable to allocate command buffer for vertex flush!"})
+    .value();
+  
+  {
+    VkCommandBufferBeginInfo flushBeginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+    flushBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(*flushCmdPtr, &flushBeginInfo);
+    std::array flushPrev{ThsvsAccessType::THSVS_ACCESS_HOST_WRITE};
+    std::array flushNext{ThsvsAccessType::THSVS_ACCESS_VERTEX_BUFFER};
+    ThsvsGlobalBarrier vertexBarrier{};
+    vertexBarrier.prevAccessCount = vka::size32(flushPrev);
+    vertexBarrier.pPrevAccesses = flushPrev.data();
+    vertexBarrier.nextAccessCount = vka::size32(flushNext);
+    vertexBarrier.pNextAccesses = flushNext.data();
+    thsvsCmdPipelineBarrier(*flushCmdPtr, &vertexBarrier, {}, {}, {}, {});
+    vkEndCommandBuffer(*flushCmdPtr);
+
+    auto flushFencePtr = vka::fence_builder{}
+      .build(*devicePtr)
+      .map_error(err::crit{"Unable to create vertex flush fence!"})
+      .value();
+    VkFence flushFence = *flushFencePtr;
+    
+    VkSubmitInfo flushSubmit{VK_STRUCTURE_TYPE_SUBMIT_INFO};
+    VkCommandBuffer flushCmd = *flushCmdPtr;
+    flushSubmit.commandBufferCount = 1;
+    flushSubmit.pCommandBuffers = &flushCmd;
+    
+    vkQueueSubmit(queue, 1, &flushSubmit, flushFence);
+    vkWaitForFences(*devicePtr, 1, &flushFence, true, ~uint64_t{});
+  }
+
   return 0;
 }
