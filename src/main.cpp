@@ -452,6 +452,38 @@ int main() {
     } else if (acquireResult != VK_SUCCESS) {
       continue;
     }
+
+    VkCommandBuffer cmd = *cmdPtrs[imageIndex];
+    VkSemaphore drawCmdDone = *drawCmdDonePtrs[imageIndex];
+    VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO};
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &cmd;
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = &drawCmdDone;
+
+    VkFence acquireFence = *acquireFencePtr;
+    VkFence cmdFence = *cmdFencePtrs[imageIndex];
+    std::vector beforeSubmit{acquireFence, cmdFence};
+    
+    auto acquireWaitResult = vkWaitForFences(
+      *devicePtr,
+      1,
+      &acquireFence,
+      true,
+      ~uint64_t{});
+    auto cmdWaitResult = vkWaitForFences(
+      *devicePtr,
+      1,
+      &cmdFence,
+      true,
+      ~uint64_t{});
+    auto fenceResetResult = vkResetFences(
+      *devicePtr,
+      vka::size32(beforeSubmit),
+      beforeSubmit.data());
+    auto submitResult =
+      vkQueueSubmit(queue, 1, &submitInfo, cmdFence);
+
   }
   vkDeviceWaitIdle(*devicePtr);
   return 0;
