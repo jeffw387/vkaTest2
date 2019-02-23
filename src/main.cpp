@@ -484,6 +484,23 @@ int main() {
     auto submitResult =
       vkQueueSubmit(queue, 1, &submitInfo, cmdFence);
 
+    VkPresentInfoKHR presentInfo{
+      VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};
+    VkSwapchainKHR swapchain = *swapchainPtr;
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = &swapchain;
+    presentInfo.pImageIndices = &imageIndex;
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = &drawCmdDone;
+    auto presentResult =
+      vkQueuePresentKHR(queue, &presentInfo);
+
+    if (presentResult != VK_SUCCESS) {
+      auto errMsg = fmt::format(
+        "Critical error {} during image presentation!",
+        presentResult);
+      err::crit{"errMsg"}(presentResult);
+    }
   }
   vkDeviceWaitIdle(*devicePtr);
   return 0;
