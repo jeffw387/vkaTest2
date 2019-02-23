@@ -329,5 +329,69 @@ int main() {
       framebuffers.push_back(std::move(framebuffer));
     });
 
+  VkCommandBufferBeginInfo cmdBegin{
+    VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+  VkRenderPassBeginInfo renderPassBegin{
+    VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
+  renderPassBegin.clearValueCount = 1;
+  VkClearValue clearValue;
+  auto& clearColor = clearValue.color.float32;
+  std::fill(
+    std::begin(clearColor), std::end(clearColor), 0.f);
+  renderPassBegin.pClearValues = &clearValue;
+  renderPassBegin.renderPass = *renderPassPtr;
+  renderPassBegin.renderArea = {
+    {0, 0}, {surfaceWidth, surfaceHeight}};
+
+  ThsvsImageBarrier presentToColor{};
+  presentToColor.discardContents = true;
+  presentToColor.prevLayout =
+    ThsvsImageLayout::THSVS_IMAGE_LAYOUT_OPTIMAL;
+  presentToColor.nextLayout =
+    ThsvsImageLayout::THSVS_IMAGE_LAYOUT_OPTIMAL;
+  std::array prevAccesses{THSVS_ACCESS_PRESENT};
+  std::array nextAccesses{
+    THSVS_ACCESS_COLOR_ATTACHMENT_WRITE};
+  presentToColor.prevAccessCount =
+    vka::size32(prevAccesses);
+  presentToColor.pPrevAccesses = prevAccesses.data();
+  presentToColor.nextAccessCount =
+    vka::size32(nextAccesses);
+  presentToColor.pNextAccesses = nextAccesses.data();
+  presentToColor.subresourceRange.aspectMask =
+    VK_IMAGE_ASPECT_COLOR_BIT;
+  presentToColor.subresourceRange.layerCount = 1;
+  presentToColor.subresourceRange.levelCount = 1;
+  for (int i{}; i < 3; ++i) {
+    auto& cmdPtr = cmdPtrs[i];
+    renderPassBegin.framebuffer = *framebuffers[i];
+    vkBeginCommandBuffer(*cmdPtr, &cmdBegin);
+
+    presentToColor.image = swapImages[i];
+    thsvsCmdPipelineBarrier(
+      *cmdPtr, {}, {}, {}, 1, &presentToColor);
+
+    vkCmdBeginRenderPass(
+      *cmdPtr,
+      &renderPassBegin,
+      VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBindPipeline(
+      *cmdPtr,
+      VK_PIPELINE_BIND_POINT_GRAPHICS,
+      *pipelinePtr);
+    std::array<VkBuffer, 2> vertexBuffers = {*posBuffer,
+                                             *colorBuffer};
+    std::array<VkDeviceSize, vka::size32(vertexBuffers)>
+      vertexBufferOffsets = {0, 0};
+    vkCmdBindVertexBuffers(
+      *cmdPtr,
+      0,
+      vka::size32(vertexBuffers),
+      vertexBuffers.data(),
+      vertexBufferOffsets.data());
+    vkCmdDraw(*cmdPtr, 3, 1, 0, 0);
+    vkCmdEndRenderPass(*cmdPtr);
+    vkEndCommandBuffer(*cmdPtr);
+  }
   return 0;
 }
