@@ -10,6 +10,26 @@
 #include "vka.hpp"
 
 using namespace platform;
+
+namespace err {
+struct crit {
+  std::string_view errMessage;
+  crit(std::string_view errMessage = "Critical error!")
+      : errMessage(errMessage) {}
+
+  template <typename T>
+  void operator()(T error) {
+    multi_logger::get()->critical("{}", errMessage);
+    exit(1);
+  }
+
+  void operator()(int error) {
+    multi_logger::get()->critical("{}", errMessage);
+    exit(error);
+  }
+};
+}  // namespace err
+
 int main() {
   auto instancePtr =
     vka::instance_builder{}
